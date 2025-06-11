@@ -1,12 +1,6 @@
 # Deep Learning from Scratch 🧠
 Welcome to **Deep Learning from Scratch**, a repository where I implement fundamental deep learning architectures from scratch using **Python, NumPy, PyTorch, and TensorFlow**. This project aims to provide a deeper understanding of how neural networks function internally, without relying on high-level libraries.
 
-## Project Goals
-
-- Implement approximately 60 important deep learning papers
-- Provide scratch implementations for learning and understanding
-- Create a comprehensive resource for deep learning research
-
 ## Contents
 
 ### 1. Foundational Deep Neural Networks
