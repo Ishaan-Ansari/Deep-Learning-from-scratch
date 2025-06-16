@@ -19,35 +19,61 @@ class Neuron:
         self.weight = value
 
 class Layer:
-    def __init__(self, num_input:int, num_neurons: int):
+    def __init__(self, num_input:int, num_neurons: int, activation: str="relu"):
         """ Initialize a layer
         Args:
         - num_input (int): Number of inputs to the layer.
         - num_neurons (int): Number of neurons in the layer.
+        - activation (str): Activation function ('ReLU' or 'Linear').
         """
-        self.neurons = [Neuron() for _ in range(num_neurons)] # List of neuron objects
-        self.weights = np.random.randn(num_input, num_neurons) # Matrix of weights
-        self.biases = np.zeros(num_neurons) # bias vector
 
-        self.inputs = None
+        # Matrix of weights initialized with He initialization for ReLU
+        if activation == "relu":
+            self.weights = np.random.randn(num_input, num_neurons)*np.sqrt(2/num_input)
+        else:
+            self.weights = np.random.randn(num_input, num_neurons)*0.01
+
+        self.biases = np.zeros(num_neurons) # bias vector
+        self.activation = activation
+
+        self.inputs = None # inputs to the layer
         self.z = None # pre-activation (weighted sum)
         self.activations = None # post-activation output
 
-    
-    def set_activations(self, inputs: np.ndarray)->None:
-        """ Caclulate the weighted sum for a neuron in the layer
-        (this is NOT the neuron's activation value)."""
-        self.z = np.dot(inputs, self.weights)+self.biases
+    def forward(self, inputs: np.ndarray)->np.ndarray:
+        """ Perform a forward pass through the layer """
+        self.inputs = inputs
+        self.z = np.dot(inputs, self.weights) + self.biases
+        if self.activation == "relu":
+            self.activations = self.relu(self.z)
+        else:
+            self.activations = self.z
 
-    def apply_activations(self)->None:
-        """ Apply the activation function to the weighted sum of the inputs
-        This is value of the neuron's activation. """
-        self.activations = self.relu(self.z)
-
-    def get_activations(self)->np.ndarray:
-        """ Return the activations of the layer """
         return self.activations
-    
+
+    def backward(self, dA: np.ndarray, learning_rate: float)->np.ndarray:
+        """Backpropagate through this layer, update parameters, and return gradient wrt inputs"""
+
+        m = self.inputs.shape[0]  
+
+        if self.activation == "relu":
+            dZ = dA * self.relu_derivative(self.z)
+        else:
+            dZ = dA
+
+        # Gradients w.r.t weights and biases      
+        dw = (1/m)*np.dot(self.inputs.T, dZ)
+        db = (1/m)*np.sum(dZ, axis=0)
+
+        # Gradient w.r.t inputs (to pass to previous layer)
+        dInputs = np.dot(dZ, self.weights.T)
+
+        # Update weights and biases
+        self.weights -= learning_rate * dw
+        self.biases -= learning_rate * db
+
+        return dInputs
+
     @staticmethod
     def relu(x: np.ndarray)->np.ndarray:
         """
@@ -61,30 +87,6 @@ class Layer:
     def relu_derivative(x: np.ndarray) -> np.ndarray:
         return (x > 0).astype(float)  # Vectorized derivative
 
-    def forward(self, inputs: np.ndarray)->np.ndarray:
-        """ Perform a forward pass through the layer """
-        self.inputs = inputs
-        self.set_activations(inputs)
-        self.apply_activations()
-        return self.activations
-    
-    def backward(self, dA: np.ndarray, learning_rate: float)->np.ndarray:
-        """Backpropagate through this layer, update parameters, and return gradient wrt inputs"""
-        dZ = dA * (self.z > 0).astype(float) # ReLU derivative
-        # Gradients w.r.t weights and biases
-        m = self.inputs.shape[0]        
-        dw = (1/m)*np.dot(self.inputs.T, dZ)
-        db = (1/m)*np.sum(dZ, axis=0)
-
-        # Gradient w.r.t inputs (to pass to previous layer)
-        dInputs = np.dot(dZ, self.weights.T)
-
-        # Update weights and biases
-        self.weights -= learning_rate * dw
-        self.biases -= learning_rate * db
-
-        return dInputs
-
 def loss(y_pred: np.ndarray, y_true: np.ndarray)->float:
     """ Calculate how correct the network's predictions are. """
     return np.mean(0.5*(y_pred-y_true)**2)
@@ -95,38 +97,40 @@ def loss_derivative(y_pred: np.ndarray, y_true: np.ndarray)->float:
     
 class Network:
     def __init__(self, input_dim: int, hidden_dim: int, output_dim: int):
-        self.hidden_layer = Layer(input_dim, hidden_dim)
-        self.output_layer = Layer(hidden_dim, output_dim)
+        self.hidden_layer = Layer(input_dim, hidden_dim, activation="relu")
+        self.output_layer = Layer(hidden_dim, output_dim, activation="linear")
 
     def forward(self, x):
         hidden_activations = self.hidden_layer.forward(x)
         output_activations = self.output_layer.forward(hidden_activations)
         return output_activations
     
-    def backward(self, x: np.ndarray, y: np.ndarray, learning_rate: float):
-        # perform a forward pass
-        y_pred = self.forward(x)
+    def backward(self, y_pred: np.ndarray, y_true: np.ndarray, learning_rate: float):
+        # Compute loss derivative
+        dLoss = loss_derivative(y_pred, y_true)
 
-        # compute loss derivative at the output
-        dLoss = y_pred - y
-
-        # backpropagate  throgh output layer
+        # Backpropagate through output layer (linear activation)
         dHidden = self.output_layer.backward(dLoss, learning_rate)
 
-        # backpropagate through hidden layer
+        # Backpropagate through hidden layer (ReLU activation)
         self.hidden_layer.backward(dHidden, learning_rate)
 
-    def train(self, x, y, epochs, learning_rate):
+    def train(self, x: np.ndarray, y: np.ndarray, epochs: int, learning_rate: float):
         # training loop
         for epoch in range(epochs):
+            # forward pass
             y_pred = self.forward(x)
+            # compute loss
             loss_val = loss(y_pred, y)
-            self.backward(x, y, learning_rate)
+            # backward pass (using cached values from forward pass)
+            self.backward(y_pred, y, learning_rate)
             if epoch % 10 == 0:
                 print(f"Epoch {epoch}: Loss = {loss_val}")
 
 
 if __name__ == "__main__":
+    np.random.seed(42) # For reproducibility
+
     # create data: x as input and y as output
     x = np.random.rand(100, 3) # 100 examples, 3 features (3 inputs)
 
