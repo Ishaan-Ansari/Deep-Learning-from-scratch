@@ -1,5 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
+import tensorflow as tf
+print(tf.__version__)
 
 class NeuralNetwork:
     def __init__(self, input_size, hidden_size, output_size, learning_rate=0.1):
