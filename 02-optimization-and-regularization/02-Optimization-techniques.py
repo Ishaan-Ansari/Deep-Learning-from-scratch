@@ -99,3 +99,65 @@ class BatchGradientDescent:
                 print(f"Epoch {epoch} Loss: {loss: .4f}")
 
         return self.loss_history
+
+
+class StochasticGradientDescent:
+    """
+    Stochastic gradient descent - Uses one sample at a time
+
+    Pros:
+    - Very fast updates
+    - Can escape local minima due to noise
+    - Memory efficient
+
+    Cons:
+    - Noisy convergence
+    - May not converge to exact minima
+    """
+
+    def __init__(self, model, learning_rate=0.01):
+        self.model = model
+        self.learning_rate = learning_rate
+        self.loss_history = []
+
+    def train_step(self, x_sample, y_sample, loss_fn):
+        """Single traing step using one sample at a time"""
+        if x_sample.dim() == 1:
+            x_sample = x_sample.unsqueeze(0)
+        if y_sample.dim() == 1:
+            y_sample = y_sample.unsqueeze(0)
+
+        loss = compute_loss_and_gradients(self.model, x_sample, y_sample, loss_fn)
+
+        with torch.no_grad():
+            for param in self.model.parameters():
+                if param.grad is not None:
+                    param.data -= self.learning_rate * param.grad
+
+        return loss
+
+    def train(self, X_train, y_train, epochs=100):
+        loss_fn = nn.MSELoss()
+
+        print("Starting Stochastic Gradient Descent...")
+        for epoch in range(epochs):
+            epoch_losses = []
+
+            # shuffle data in each epoch
+            indices = torch.randperm(X_train.size(0))
+
+            # process one sample at time
+            for i in indices:
+                x_sample = X_train[i]
+                y_sample = y_train[i]
+
+                loss = self.train_step(x_sample, y_sample, loss_fn)
+                epoch_losses.append(loss)
+
+            avg_loss = np.mean(epoch_losses)
+            self.loss_history.append(avg_loss)
+
+            if epoch % 20 == 0:
+                print(f"Epoch {epoch} Loss: {avg_loss: .4f}")
+
+        return self.loss_history
