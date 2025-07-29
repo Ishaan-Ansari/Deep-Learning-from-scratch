@@ -161,3 +161,61 @@ class StochasticGradientDescent:
                 print(f"Epoch {epoch} Loss: {avg_loss: .4f}")
 
         return self.loss_history
+
+class MiniBatchGradientDescent:
+    """
+       Mini-batch gradient descent - Uses some samples at a time
+       (usually a batch size of 32 is taken)
+
+       Pros:
+       - Good balance between spped and stability
+       - Efficient use of vectorization
+       - Less memory usage than batch, more stable than SGD
+
+       Cons:
+       - Need to tune batch size
+       - Still some noise in gradients
+       """
+
+    def __init__(self, model, learning_rate=0.01, batch_size=32):
+        self.model = model
+        self.learning_rate = learning_rate
+        self.batch_size = batch_size
+        self.loss_history = []
+
+    def train_step(self, x_batch, y_batch, loss_fn):
+        """Single training step using mini-batch"""
+        loss = compute_loss_and_gradients(self.model, x_batch, y_batch, loss_fn)
+
+        # update parameters
+        with torch.no_grad():
+            for param in self.model.parameters():
+                if param.grad is not None:
+                    param.data -= self.learning_rate * param.grad
+
+        return loss
+
+
+    def train(self, X_train, y_train, epochs=100):
+        loss_fn = nn.MSELoss()
+
+        # Create Dataloader for mini-batching
+        dataset = TensorDataset(X_train, y_train)
+        dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
+
+        print("Starting Mini-Batch Gradient Descent...")
+        for epoch in range(epochs):
+            epoch_losses = []
+
+            # Process mini-batches
+            for x_batch, y_batch in dataloader:
+                loss = self.train_step(x_batch, y_batch, loss_fn)
+                epoch_losses.append(loss)
+
+            avg_loss = np.mean(epoch_losses)
+            self.loss_history.append(avg_loss)
+
+            if epoch % 20 == 0:
+                print(f"Epoch {epoch} Loss: {avg_loss: .4f}")
+
+        return self.loss_history
