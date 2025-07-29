@@ -1,7 +1,63 @@
 # Deep Learning from Scratch 🧠
-Welcome to **Deep Learning from Scratch**, a repository where I implement fundamental deep learning architectures from scratch using **Python, NumPy, PyTorch, and TensorFlow**. This project aims to provide a deeper understanding of how neural networks function internally, without relying on high-level libraries.
+Welcome to **Deep Learning from Scratch**, a repository where I implement fundamental deep learning architectures from scratch using **Python, NumPy, and PyTorch**. This project aims to provide a deeper understanding of how neural networks function internally, without relying on high-level libraries.
 
-## Contents
+> [!IMPORTANT]
+>
+> Each topic highlighted in this repository is covered in a folder linked below.
+>
+> In each folder, you'll find a copy of the critical papers related to the topic (`.pdf` files), along with my own breakdown of intuitions, math, and my implementation when relevant (all in the `.ipynb` file).
+
+**1. Deep Neural Networks**
+
+- [1.1. DNN](/01-deep-neural-networks/01-dnn/)
+- [1.2. CNN](/01-deep-neural-networks/02-cnn/)
+- [1.3. AlexNet](/01-deep-neural-networks/03-alex-net/)
+- [1.4. UNet](/01-deep-neural-networks/04-u-net/)
+
+**2. Optimization & Regularization**
+
+- [2.1. Weight Decay](/02-optimization-and-regularization/01-weight-decay/)
+- [2.2. ReLU](/02-optimization-and-regularization/02-relu/)
+- [2.3. Residuals](/02-optimization-and-regularization/03-residuals/)
+- [2.4. Dropout](/02-optimization-and-regularization/04-dropout/)
+- [2.5. Batch Normalization](/02-optimization-and-regularization/05-batch-norm/)
+- [2.6. Layer Normalization](/02-optimization-and-regularization/06-layer-norm/)
+- [2.7. GELU](/02-optimization-and-regularization/07-gelu/)
+- [2.8. Adam](/02-optimization-and-regularization/08-adam/)
+
+**3. Sequence Modeling**
+
+- [3.1. RNN](/03-sequence-modeling/01-rnn/)
+- [3.2. LSTM](/03-sequence-modeling/02-lstm/)
+- [3.3. Learning to Forget](/03-sequence-modeling/03-learning-to-forget/)
+- [3.4. Word2Vec & Phrase2Vec](/03-sequence-modeling/04-word2vec/)
+- [3.5. Seq2Seq](/03-sequence-modeling/05-seq2seq/)
+- [3.6. Attention](/03-sequence-modeling/06-attention/)
+- [3.7. Mixture of Experts](/03-sequence-modeling/07-mixture-of-experts/)
+
+**4. Transformers**
+
+- [4.1. Transformer](/04-transformers/01-transformer/)
+- [4.2. BERT](/04-transformers/02-bert/)
+- [4.3. T5](/04-transformers/03-t5)
+- [4.4. GPT-2 & GPT-3](/04-transformers/04-gpt)
+- [4.5. LoRA](/04-transformers/05-lora)
+- [4.8. RLHF & InstructGPT](/04-transformers/06-rlhf)
+- [4.9. Vision Transformer](/04-transformers/07-vision-transformer)
+
+**5. Image Generation**
+
+- [5.1. GANs](/05-image-generation/01-gan/)
+- [5.2. VAEs](/05-image-generation/02-vae/)
+- [5.3. Diffusion](/05-image-generation/03-diffusion/)
+- [5.4. CLIP](/05-image-generation/05-clip/)
+- [5.5. DALL E & DALL E 2](/05-image-generation/06-dall-e/)
+
+<br />
+
+
+
+## Papers-shelf
 
 ### 1. Foundational Deep Neural Networks
 
