@@ -35,7 +35,7 @@ def generate_sample_data(n_samples=1000):
 
 def compute_loss_and_gradients(model, X, y, loss_fn):
     """Compute loss and gradient for given data"""
-    model.zero_grad()
+    model.zero_grad()   # clears any accumulation on params in a prev. pass
     predictions = model(X)
     loss = loss_fn(predictions, y)
     loss.backward()
@@ -54,3 +54,48 @@ def apply_gradients(model, gradients, learning_rate):
     for param, grad in zip(model.parameters(), gradients):
         param.data -= learning_rate * grad
 
+
+class BatchGradientDescent:
+    """
+    Batch gradient descent - Uses ALL training data for each update
+
+    Pros:
+    - Stable convergence
+    - Exact gradient computation
+
+    Cons:
+    - High latency
+    - Requires entire dataset memory
+
+    """
+
+    def __init__(self, model, learning_rate=0.01):
+        self.model = model
+        self.learning_rate = learning_rate
+        self.loss_history = []
+
+    def train_step(self, X_train, y_train, loss_fn):
+        """Single training step using entire dataset"""
+        loss = compute_loss_and_gradients(self.model, X_train, y_train, loss_fn)
+
+
+        # update parameters using computed gradients
+        with torch.no_grad():
+            for param in self.model.parameters():
+                if param.grad is not None:
+                    param.data -= self.learning_rate * param.grad
+
+        self.loss_history.append(loss)
+        return loss
+
+    def train(self, X_train, y_train, epochs=100):
+        loss_fn = nn.MSELoss()
+
+        print("Starting Batch Gradient Descent...")
+        for epoch in range(epochs):
+            loss = self.train_step(X_train, y_train, loss_fn)
+
+            if epoch % 20 == 0:
+                print(f"Epoch {epoch} Loss: {loss: .4f}")
+
+        return self.loss_history
