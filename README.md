@@ -57,7 +57,7 @@ Welcome to **Deep Learning from Scratch**, a repository where I implement fundam
 
 
 
-## Papers-shelf
+## Paper shelf
 
 ### 1. Foundational Deep Neural Networks
 
