@@ -13,9 +13,9 @@ from torch.utils.data import DataLoader, TensorDataset
 torch.manual_seed(42)
 np.random.seed(42)
 
-class SimpleNet(nn.Module):
+class SimpleNeuralNet(nn.Module):
     def __init__(self, input_size=2, hidden_size=10, output_size=1):
-        super(SimpleNet, self).__init__()
+        super(SimpleNeuralNet, self).__init__()
         self.fc1 = nn.Linear(input_size, hidden_size)
         self.fc2 = nn.Linear(hidden_size, output_size)
 
@@ -121,7 +121,7 @@ class StochasticGradientDescent:
         self.loss_history = []
 
     def train_step(self, x_sample, y_sample, loss_fn):
-        """Single traing step using one sample at a time"""
+        """Single training step using one sample at a time"""
         if x_sample.dim() == 1:
             x_sample = x_sample.unsqueeze(0)
         if y_sample.dim() == 1:
@@ -168,7 +168,7 @@ class MiniBatchGradientDescent:
        (usually a batch size of 32 is taken)
 
        Pros:
-       - Good balance between spped and stability
+       - Good balance between speed and stability
        - Efficient use of vectorization
        - Less memory usage than batch, more stable than SGD
 
@@ -219,3 +219,117 @@ class MiniBatchGradientDescent:
                 print(f"Epoch {epoch} Loss: {avg_loss: .4f}")
 
         return self.loss_history
+
+
+def compare_algorithms():
+    """Compare all three gradient descent variants"""
+
+    # Generate data
+    X, y = generate_sample_data(n_samples=1000)
+    print(f"Dataset: {X.shape[0]} samples, {X.shape[1]} features")
+
+    # Create three identical models
+    model_batch = SimpleNeuralNet()
+    model_sgd = SimpleNeuralNet()
+    model_mini = SimpleNeuralNet()
+
+    # Copy weights to ensure fair comparison
+    model_sgd.load_state_dict(model_batch.state_dict())
+    model_mini.load_state_dict(model_batch.state_dict())
+
+    epochs = 50
+
+    # Train with Batch GD
+    batch_trainer = BatchGradientDescent(model_batch, learning_rate=0.01)
+    batch_losses = batch_trainer.train(X, y, epochs=epochs)
+
+    # Train with SGD
+    sgd_trainer = StochasticGradientDescent(model_sgd, learning_rate=0.01)
+    sgd_losses = sgd_trainer.train(X, y, epochs=epochs)
+
+    # Train with Mini-batch GD
+    mini_trainer = MiniBatchGradientDescent(model_mini, learning_rate=0.01, batch_size=32)
+    mini_losses = mini_trainer.train(X, y, epochs=epochs)
+
+    # Plot comparison
+    plt.figure(figsize=(12, 8))
+
+    plt.subplot(2, 2, 1)
+    plt.plot(batch_losses, label='Batch GD', linewidth=2)
+    plt.title('Batch Gradient Descent')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.grid(True)
+
+    plt.subplot(2, 2, 2)
+    plt.plot(sgd_losses, label='Stochastic GD', linewidth=2, alpha=0.7)
+    plt.title('Stochastic Gradient Descent')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.grid(True)
+
+    plt.subplot(2, 2, 3)
+    plt.plot(mini_losses, label='Mini-batch GD', linewidth=2)
+    plt.title('Mini-batch Gradient Descent')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.grid(True)
+
+    plt.subplot(2, 2, 4)
+    plt.plot(batch_losses, label='Batch GD', linewidth=2)
+    plt.plot(sgd_losses, label='Stochastic GD', alpha=0.7)
+    plt.plot(mini_losses, label='Mini-batch GD', linewidth=2)
+    plt.title('Comparison of All Methods')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()
+
+    # Print final losses
+    print(f"\nFinal Losses:")
+    print(f"Batch GD: {batch_losses[-1]:.4f}")
+    print(f"Stochastic GD: {sgd_losses[-1]:.4f}")
+    print(f"Mini-batch GD: {mini_losses[-1]:.4f}")
+
+
+def demonstrate_key_concepts():
+    """Demonstrate key concepts with simple examples"""
+
+    print("=== KEY CONCEPTS DEMONSTRATION ===\n")
+
+    # Create sample data
+    X, y = generate_sample_data(n_samples=100)
+
+    print("1. BATCH SIZE IMPACT:")
+    print(f"   Full dataset: {X.shape[0]} samples")
+    print(f"   Batch GD: Uses all {X.shape[0]} samples per update")
+    print(f"   Stochastic GD: Uses 1 sample per update")
+    print(f"   Mini-batch GD: Uses 32 samples per update")
+
+    print("\n2. UPDATE FREQUENCY:")
+    print(f"   Batch GD: 1 update per epoch")
+    print(f"   Stochastic GD: {X.shape[0]} updates per epoch")
+    print(f"   Mini-batch GD: {X.shape[0] // 32} updates per epoch")
+
+    print("\n3. MEMORY USAGE:")
+    print(f"   Batch GD: Loads entire dataset ({X.shape[0]} samples)")
+    print(f"   Stochastic GD: Loads 1 sample at a time")
+    print(f"   Mini-batch GD: Loads 32 samples at a time")
+
+    print("\n4. CONVERGENCE CHARACTERISTICS:")
+    print(f"   Batch GD: Smooth, stable convergence")
+    print(f"   Stochastic GD: Noisy, fast but unstable")
+    print(f"   Mini-batch GD: Balanced - reasonably smooth and fast")
+
+
+# Run the demonstration
+if __name__ == "__main__":
+    demonstrate_key_concepts()
+    print("\n" + "=" * 50)
+    compare_algorithms()
