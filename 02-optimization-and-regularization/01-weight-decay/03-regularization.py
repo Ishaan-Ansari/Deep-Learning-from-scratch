@@ -49,7 +49,7 @@ class Dropoutnet(nn.Module):
 
         prev_size = input_size
         for hidden_size, dropout_rate in zip(hidden_sizes, dropout_rates):
-            self.layers.append(nn.Linear(dropout_rate))
+            self.layers.append(nn.Linear(prev_size, hidden_size))
             self.dropouts.append(nn.Dropout(dropout_rate))
             prev_size = hidden_size
 
@@ -60,3 +60,18 @@ class Dropoutnet(nn.Module):
             x = F.relu(layer(x))
             x = dropout(x)
         return self.output_layer(x)
+
+# usage
+if __name__ == '__main__':
+    model = Dropoutnet(
+        input_size=784,
+        hidden_sizes=[128, 64],
+        output_size=10,
+        dropout_rates=[0.1, 0.2]
+    )
+
+    x = torch.randn(32, 784)
+    output = model(x)
+    print(f"Input shape: {x.shape}")
+    print(f"Output shape: {output.shape}")
+    print(f"model: {model}")
