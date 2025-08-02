@@ -40,3 +40,23 @@ class EarlyStopping:
                 if self.restore_best_weights and self.best_weights:
                     model.load_state_dict(self.best_weights)
                 return True
+
+class Dropoutnet(nn.Module):
+    def __init__(self, input_size, hidden_sizes, output_size, dropout_rates):
+        super().__init__()
+        self.layers = nn.ModuleList()
+        self.dropouts = nn.ModuleList()
+
+        prev_size = input_size
+        for hidden_size, dropout_rate in zip(hidden_sizes, dropout_rates):
+            self.layers.append(nn.Linear(dropout_rate))
+            self.dropouts.append(nn.Dropout(dropout_rate))
+            prev_size = hidden_size
+
+        self.output_layer = nn.Linear(prev_size, output_size)
+
+    def forward(self, x):
+        for layer, dropout in zip(self.layers, self.dropouts):
+            x = F.relu(layer(x))
+            x = dropout(x)
+        return self.output_layer(x)
