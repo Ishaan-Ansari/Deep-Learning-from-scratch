@@ -68,3 +68,34 @@ class MultiHeadAttention(nn.Module):
         self.d_model = d_model
         self.num_heads = num_heads
         assert d_model % num_heads == 0, "d_model must be divisible by num_heads"
+
+        self.d_k = d_model // num_heads
+        self.w_q = nn.Linear(d_model, d_model)
+        self.w_k = nn.Linear(d_model, d_model)
+        self.w_v = nn.Linear(d_model, d_model)
+
+        self.w_o = nn.Linear(d_model, d_model) # Final linear layer to combine heads
+        self.dropout = nn.Dropout(dropout)
+
+    @staticmethod
+    def attention(query, key, value, mask=None, dropout=None):
+        d_k = query.size(-1)
+
+        attention_scores = (quetry @ key.transpose(-2, -1)) / math.sqrt(d_k) 
+        if mask is not None:
+            attention_scores = attention_scores.masked_fill(mask == 0, -1e9)
+        attention_weights = torch.softmax(attention_scores, dim=-1)
+
+
+    def forward(self, query, key, value, mask=None):
+        query = self.w_q(query) # Shape: (batch_size, seq_len, d_model) -> (batch_size, seq_len, d_model)
+        key = self.w_k(key)
+        value = self.w_v(value)
+
+        # batch, seq_len, d_model -> batch, num_heads, seq_len, d_k -> batch, num_heads, seq_len, d_k
+        query = query.view(query.shape[0], query.shape[1], self.num_heads, self.d_k).transpose(1, 2)
+        key = key.view(key.shape[0], key.shape[1], self.num_heads, self.d_k).transpose(1, 2)
+        value = value.view(value.shape[0], value.shape[1], self.num_heads, self.d_k).transpose(1, 2)
+
+        x, self.attention_scores = MultiHeadAttentionBlock.attention(query, key, value, mask, self.dropout)
+
