@@ -14,6 +14,11 @@ class InputEmbedding(nn.Module):
     
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model: int, seq_len: int, dropout: float):
+        """
+        d_model: Dimension of the model
+        seq_len: Maximum length of the input sequences
+        dropout: Dropout rate
+        """
         super().__init__()
         self.d_model = d_model
         self.seq_len = seq_len
@@ -81,11 +86,17 @@ class MultiHeadAttention(nn.Module):
     def attention(query, key, value, mask=None, dropout=None):
         d_k = query.size(-1)
 
-        attention_scores = (quetry @ key.transpose(-2, -1)) / math.sqrt(d_k) 
+        attention_scores = (query @ key.transpose(-2, -1)) / math.sqrt(d_k) 
         if mask is not None:
             attention_scores = attention_scores.masked_fill(mask == 0, -1e9)
-        attention_weights = torch.softmax(attention_scores, dim=-1)
+        attention_weights = torch.softmax(attention_scores, dim=-1) # Shape: (batch_size, num_heads, seq_len, seq_len)
+        
+        if dropout is not None:
+            attention_output = dropout(attention_output)
 
+        attention_output = attention_weights @ value # Shape: (batch_size, num_heads, seq_len, d_k)
+
+        return attention_output, attention_weights
 
     def forward(self, query, key, value, mask=None):
         query = self.w_q(query) # Shape: (batch_size, seq_len, d_model) -> (batch_size, seq_len, d_model)
@@ -97,5 +108,9 @@ class MultiHeadAttention(nn.Module):
         key = key.view(key.shape[0], key.shape[1], self.num_heads, self.d_k).transpose(1, 2)
         value = value.view(value.shape[0], value.shape[1], self.num_heads, self.d_k).transpose(1, 2)
 
-        x, self.attention_scores = MultiHeadAttentionBlock.attention(query, key, value, mask, self.dropout)
+        x, self.attention_scores = MultiHeadAttention.attention(query, key, value, mask, self.dropout)
 
+        x = x.transpose(1, 2).contiguous().view(x.shape[0], -1, self.num_heads * self.d_k) # Concatenate heads and put back in (batch_size, seq_len, d_model)
+        x = self.w_o(x) # Final linear layer
+        
+        return x
