@@ -170,4 +170,54 @@ class Encoder(nn.Module):
 class DecoderBlock(nn.Module):
     # The DecoderBlock takes in two MultiHeadAttention. One is self-attention, while the other is cross-attention
     # It also takes in the FeedForward block and the dropout.
+    def __init__(self, self_attention_block: MultiHeadAttention, cross_attention_block: MultiHeadAttention, feed_forward_block: FeedForward, dropout: float):
+        super().__init__()
+        self.self_attention_block = self_attention_block
+        self.cross_attention_block = cross_attention_block
+        self.feed_forward_block = feed_forward_block
+        self.residual_connections = nn.ModuleList([ResidualConnection(dropout) for _ in range(3)]) # 3 Residual Connections with dropout
+
+    def forward(self, x, encoder_output, src_mask, tgt_mask):
+        # Self-attention block with query, key, and value plus the target language mask
+        x = self.residual_connections[0](x, lambda x: self.self_attention_block(x, x, x, tgt_mask))
+
+        # Cross-attention block with using two 'encoder_output' for key and value
+        x = self.residual_connections[1](x, lambda x: self.cross_attention_block(x, encoder_output, encoder_output, src_mask))
+
+        # Feed-forward block
+        x = self.residual_connections[2](x, self.feed_forward_block)
+        return x
     
+class Decoder(nn.Module):
+    def __init__(self, layers: nn.ModuleList) -> None:
+        super().__init__()
+        self.layers = layers
+        self.norm = LayerNormalization()  # Final layer normalization
+
+    def forward(self, x, encoder_output, src_mask, tgt_mask):
+        for layer in self.layers:
+            x = layer(x, encoder_output, src_mask, tgt_mask)  
+        
+        return self.norm(x)  # Normalizing output
+    
+# projection layer
+class ProjectionLayer(nn.Module):
+    def __init__(self, d_model: int, vocab_size: int):
+        super().__init__()
+        self.linear = nn.Linear(d_model, vocab_size)
+
+    def forward(self, x):
+        return torch.log_softmax(self.linear(x), dim=-1)  # Log-Softmax for numerical stability
+    
+# Creating the Transformer Architecture
+class Transformer(nn.Module):
+    def __init__(self, encoder: Encoder, decoder: Decoder, src_embed: InputEmbedding, tgt_embed: InputEmbedding, src_pos:PositionalEncoding, tgt_pos: PositionalEncoding, projection: ProjectionLayer):
+        super().__init__()
+        self.encoder = encoder
+        self.decoder = decoder
+        self.src_embed = src_embed
+        self.tgt_embed = tgt_embed
+        self.src_pos = src_pos
+        self.tgt_pos = tgt_pos
+        self.projection = projection
+        
