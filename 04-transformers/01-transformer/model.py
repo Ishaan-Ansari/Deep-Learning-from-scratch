@@ -166,4 +166,8 @@ class Encoder(nn.Module):
 
         return self.norm(x)  # Normalizing output
     
+# Decoder 
+class DecoderBlock(nn.Module):
+    # The DecoderBlock takes in two MultiHeadAttention. One is self-attention, while the other is cross-attention
+    # It also takes in the FeedForward block and the dropout.
     
