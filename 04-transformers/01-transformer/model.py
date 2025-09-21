@@ -28,6 +28,7 @@ class PositionalEncoding(nn.Module):
         pe = torch.zeros(seq_len, d_model)
         # Create a vector of shape (Seq_len, 1)
         position = torch.arange(0, seq_len, dtype=torch.float).unsqueeze(1)
+        # multiply by denominator by log term for numerical stability
         div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
 
         # Apply the sine function to even indices
@@ -42,25 +43,31 @@ class PositionalEncoding(nn.Module):
         return self.dropout(x)
     
 class LayerNormalization(nn.Module):
-
-    def __init__(self, eps: float = 1e-6)-> None:
+    def __init__(self, eps: float = 1e-6)-> None:   # we define eps as 0.000001 to avoid division by zero
         super().__init__()
         self.eps = eps
-        self.alpha = nn.Parameter(torch.ones(1))
-        self.bias = nn.Parameter(torch.zeros(1)),
+        # We define alpha as a trainable parameter and initialize it with ones
+        self.alpha = nn.Parameter(torch.ones(1))    # One-dimensional tensor that will be used to scale the input data
+
+        # We define bias as a trainable parameter and initialize it with zeros
+        self.bias = nn.Parameter(torch.zeros(1)) # One-dimensional tensor that will be added to the input data
 
 
     def forward(self, x):
-        mean = x.mean(-1, keepdim=True)
-        std = x.std(-1, keepdim=True)
+        mean = x.mean(-1, keepdim=True) # Computing the mean of the input data. Keeping the number of dimensions unchanged
+        std = x.std(-1, keepdim=True)   # Computing the standard deviation of the input data. Keep the number of dimensions unchanged
+
+        # Returning the normalized input
         return self.alpha * (x - mean) / (std + self.eps) + self.bias
     
 
 class FeedForward(nn.Module):
     def __init__(self, d_model: int, d_ff: int, dropout: float = 0.1):
         super().__init__()
-        self.linear_1 = nn.Linear(d_model, d_ff)
-        self.dropout = nn.Dropout(dropout)
+        # First linear transformation
+        self.linear_1 = nn.Linear(d_model, d_ff)    # W1 & b1
+        self.dropout = nn.Dropout(dropout)      # Dropout to prevent overfitting
+        # Second linear transformation
         self.linear_2 = nn.Linear(d_ff, d_model)
 
     def forward(self, x):
