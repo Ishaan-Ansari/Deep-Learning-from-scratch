@@ -94,6 +94,7 @@ class MultiHeadAttention(nn.Module):
         d_k = query.size(-1)
 
         attention_scores = (query @ key.transpose(-2, -1)) / math.sqrt(d_k) 
+        # Before applying the softmax, we apply the mask to hide some interactions between words
         if mask is not None:
             attention_scores = attention_scores.masked_fill(mask == 0, -1e9)
         attention_weights = torch.softmax(attention_scores, dim=-1) # Shape: (batch_size, num_heads, seq_len, seq_len)
@@ -121,3 +122,48 @@ class MultiHeadAttention(nn.Module):
         x = self.w_o(x) # Final linear layer
         
         return x
+
+# Building residual connection
+class ResidualConnection(nn.Module):
+    def __init__(self, size: int, dropout: float):
+        super().__init__()
+        self.dropout = nn.Dropout(dropout)  # Dropout to prevent overfitting
+        self.norm = LayerNormalization()  # Normalization layer
+
+    def forward(self, x, sublayer):
+        # We normalize the input and add it to the original input 'x'. This creates the residual connection process.
+        return x + self.dropout(sublayer(self.norm(x))) 
+    
+
+# Encoder block
+class EncoderBlock(nn.Module):
+    # This blocks takes the MultiHeadAttention, FeedForward, as well as the dropout rate for the residual connection
+    def __init__(self, self_attention_block: MultiHeadAttention, feed_forward_block: FeedForward, dropout: float):
+        super().__init__()
+        self.self_attention_block = self_attention_block
+        self.feed_forward_block = feed_forward_block
+        self.residual_connections = nn.ModuleList([ResidualConnection(dropout) for _ in range(2)]) # 2 Residual Connections with dropout
+
+    def forward(self, x, src_mask):
+        # Applying the first residual connection around the self-attention block
+        x = self.residual_connections[0](x, lambda x: self.self_attention_block(x, x, x, src_mask)) # Three x's are query, key, value plus the source mask
+
+        # Applying the second residual connection around the feed-forward block
+        x = self.residual_connections[1](x, self.feed_forward_block)
+        return x # Output tensor after applying self-attention and feed-forward layers with residual connections
+    
+
+# Building encoder 
+class Encoder(nn.Module):
+    def __init__(self,  layers: nn.ModuleList) -> None:
+        super().__init__()
+        self.layers = layers
+        self.norm = LayerNormalization()  # Final layer normalization
+
+    def forward(self, x, src_mask):
+        for layer in self.layers:
+            x = layer(x, src_mask)  # Applying each EncoderBlock to the input tensor 'x'
+
+        return self.norm(x)  # Normalizing output
+    
+    
