@@ -28,3 +28,9 @@ class NeuralNetwork(torch.nn.Module):
 model = NeuralNetwork(num_inputs=10, num_outputs=1)
 # print the model architecture
 print(model)
+
+# Next, let’s check the total number of trainable parameters of this model:
+total_params = sum(
+    param.numel() for param in model.parameters() if param.requires_grad
+)
+print(f'Total trainable parameters: {total_params}')
