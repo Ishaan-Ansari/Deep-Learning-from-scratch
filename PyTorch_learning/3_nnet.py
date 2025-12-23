@@ -44,11 +44,11 @@ model = NeuralNetwork(num_inputs=10, num_outputs=1)
 # print(model.layers[0].weight) # weights of the first linear layer
 
 # Forward pass with random input
-x = torch.randn(5, 10)  # batch size of 5, input size of 10
-logits = model(x)
-print(logits)  # output logits
+# x = torch.randn(5, 10)  # batch size of 5, input size of 10
+# logits = model(x)
+# print(logits)  # output logits
 
 # It is best practice to use torch.no_grad() context manager during inference to avoid unnecessary gradient computations
 with torch.no_grad():
     logits = model(x)
-    print(logits)  # output logits without gradient tracking
+print(logits)  # output logits without gradient tracking
