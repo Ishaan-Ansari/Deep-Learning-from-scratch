@@ -34,3 +34,6 @@ total_params = sum(
     param.numel() for param in model.parameters() if param.requires_grad
 )
 print(f'Total trainable parameters: {total_params}')
+
+print(model.layers[0].weight.shape) # weights of the first linear layer
+
