@@ -35,5 +35,16 @@ total_params = sum(
 )
 print(f'Total trainable parameters: {total_params}')
 
-print(model.layers[0].weight.shape) # weights of the first linear layer
+# print(model.layers[0].weight.shape) # weights of the first linear layer
+
+# We can make the random initialization reproducible by setting a random seed:
+torch.manual_seed(0)
+
+model = NeuralNetwork(num_inputs=10, num_outputs=1)
+# print(model.layers[0].weight) # weights of the first linear layer
+
+# Forward pass with random input
+x = torch.randn(5, 10)  # batch size of 5, input size of 10
+logits = model(x)
+print(logits)  # output logits
 
