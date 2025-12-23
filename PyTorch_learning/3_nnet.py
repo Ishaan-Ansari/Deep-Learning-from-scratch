@@ -48,3 +48,7 @@ x = torch.randn(5, 10)  # batch size of 5, input size of 10
 logits = model(x)
 print(logits)  # output logits
 
+# It is best practice to use torch.no_grad() context manager during inference to avoid unnecessary gradient computations
+with torch.no_grad():
+    logits = model(x)
+    print(logits)  # output logits without gradient tracking
