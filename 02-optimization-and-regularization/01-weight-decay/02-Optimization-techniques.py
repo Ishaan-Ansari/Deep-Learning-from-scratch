@@ -100,8 +100,76 @@ class BatchGradientDescent:
                 print(f"Epoch [{epoch + 1}/{epochs}], Loss: {loss:.4f}")
 
 class StochasticGradientDescent:
-    pass
+    """
+    Stochastic Gradient Descent: Uses ONE data point at a time to compute gradients and update weights.
+    """
+    def __init__(self, model: NeuralNetwork, learning_rate: float = 0.01):
+        self.model = model
+        self.learning_rate = learning_rate
+        self.optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
+    def train_epoch(self, X_train: torch.Tensor, y_train: torch.Tensor):
+        """
+        Train for ONE epoch using ONE data point at a time.
+
+        Flow (repeated N times for N data points):
+        1. Pick ONE random sample.
+        2. Zero out previous gradients.
+        3. Forward pass on the sample.
+        4. Compute loss.
+        5. Backward pass to compute gradients.
+        6. Update weights.
+
+        Args:
+            X_train (torch.Tensor): Training input data.
+            y_train (torch.Tensor): Training target labels.
+        Returns:
+            float: Average loss value for the epoch.
+        """
+        self.model.train()
+        total_loss = 0.0
+        n_samples = X_train.size(0)
+
+        # Create random permutation of indices for shuffling
+        indices = torch.randperm(n_samples)
+
+        for i in indices:
+            # 1. Pick ONE random sample
+            x_single = X_train[i:i+1]
+            y_single = y_train[i:i+1]
+
+            # 2. Zero out previous gradients
+            self.optimizer.zero_grad()
+
+            # 3. Forward pass on the sample
+            logits = self.model(x_single)
+
+            # 4. Compute loss
+            loss = F.cross_entropy(logits, y_single)
+
+            # 5. Backward pass to compute gradients
+            loss.backward()
+
+            # 6. Update weights
+            self.optimizer.step()
+
+            total_loss += loss.item()
+
+        return total_loss / n_samples
+    
+    def train(self, X_train: torch.Tensor, y_train: torch.Tensor, epochs: int = 100):
+        """
+        Train the model for a specified number of epochs.
+
+        Args:
+            X_train (torch.Tensor): Training input data.
+            y_train (torch.Tensor): Training target labels.
+            epochs (int): Number of epochs to train.
+        """
+        for epoch in range(epochs):
+            loss = self.train_epoch(X_train, y_train)
+            if (epoch + 1) % 10 == 0:
+                print(f"Epoch [{epoch + 1}/{epochs}], Loss: {loss:.4f}")
 
 class MiniBatchGradientDescent:
     pass
