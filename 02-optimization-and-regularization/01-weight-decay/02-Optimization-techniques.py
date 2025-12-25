@@ -172,4 +172,78 @@ class StochasticGradientDescent:
                 print(f"Epoch [{epoch + 1}/{epochs}], Loss: {loss:.4f}")
 
 class MiniBatchGradientDescent:
-    pass
+    """
+    Mini-Batch Gradient Descent: Uses a SMALL BATCH of data points to compute gradients and update weights.
+    """
+    def __init__(self, model: NeuralNetwork, learning_rate: float = 0.01, batch_size: int = 32):
+        self.model = model
+        self.learning_rate = learning_rate
+        self.batch_size = batch_size
+        self.optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+
+
+    def train_epoch(self, train_loader: DataLoader):
+        """
+        Train for ONE epoch using MINI-BATCHES of data.
+
+        Flow (repeated for each mini-batch):
+        1. Get a mini-batch of samples.
+        2. Zero out previous gradients.
+        3. Forward pass on the mini -batch.
+        4. Compute loss.
+        5. Backward pass to compute gradients.
+        6. Update weights.
+
+
+        Args:
+            X_train (torch.Tensor): Training input data.
+            y_train (torch.Tensor): Training target labels.
+
+        Returns:
+            float: Average loss value for the epoch.
+        """
+        self.model.train()
+        total_loss = 0.0
+        n_samples = 0
+
+        for X_batch, y_batch in train_loader:
+            # 1. Zero out previous gradients
+            self.optimizer.zero_grad()
+
+            # 2. Forward pass on the mini-batch
+            logits = self.model(X_batch)
+
+            # 3. Compute loss
+            loss = F.cross_entropy(logits, y_batch)
+
+            # 4. Backward pass to compute gradients
+            loss.backward()
+
+            # 5. Update weights
+            self.optimizer.step()
+
+            total_loss += loss.item()
+
+        return total_loss / n_samples
+    
+
+    def train(self, X_train: torch.Tensor, y_train: torch.Tensor, epochs: int = 100):
+        """
+        Train the model for a specified number of epochs.
+
+        Args:
+            X_train (torch.Tensor): Training input data.
+            y_train (torch.Tensor): Training target labels.
+            epochs (int): Number of epochs to train.
+        """
+
+        dataset = TensorDataset(X_train, y_train)
+        train_loader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
+
+        for epoch in range(epochs):
+            loss = self.train_epoch(train_loader)
+            if (epoch + 1) % 10 == 0:
+                print(f"Epoch [{epoch + 1}/{epochs}], Loss: {loss:.4f}")
+
+
+        
