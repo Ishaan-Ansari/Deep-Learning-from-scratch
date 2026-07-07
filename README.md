@@ -198,7 +198,7 @@ If you find this repository useful in your research, please cite it:
 
 ```bibtex
 @misc{singh_paper_replications_2025,
-  author       = {Ishaan Singh},
+  author       = {Ishaan Ansari},
   title        = {Deep-Learning-from-scratch: Replication from Scratch Repository using PyTorch},
   year         = {2025},
   publisher    = {GitHub},
