@@ -1,5 +1,5 @@
-# Deep Learning from Scratch 🧠
-Welcome to **Deep Learning from Scratch**, a repository where I implement fundamental deep learning architectures from scratch using **Python, NumPy, and PyTorch**. This project aims to provide a deeper understanding of how neural networks function internally, without relying on high-level libraries.
+# Deep learning 
+A repository where I implement fundamental deep learning architectures from scratch using **Python, NumPy, and PyTorch**. This project aims to provide a deeper understanding of how neural networks function internally, without relying on high-level libraries.
 
 > [!IMPORTANT]
 >
@@ -172,12 +172,13 @@ Welcome to **Deep Learning from Scratch**, a repository where I implement fundam
 - **Knowledge Distillation** (2022): Comprehensive Survey [pdf](https://arxiv.org/pdf/2006.05525.pdf)
 - **Pruning and Quantization Techniques** (2022): Model Compression Survey [pdf](https://arxiv.org/pdf/2102.06322.pdf)
 
-## 🛠️ How to Use
+## Usage
+
 1. Clone the repository:
    ```bash
    git clone https://github.com/Ishaan-Ansari/Deep-Learning-from-scratch.git
    ```
-2. Navigate to a specific model:
+2. Navigate to a specific Folder:
    ```bash
    cd Deep-Learning-from-scratch/[Folder_Name]
    ```
@@ -187,11 +188,21 @@ Welcome to **Deep Learning from Scratch**, a repository where I implement fundam
    ```
 4. Follow the instructions within each notebook.
 
-## 📌 Contributions & Feedback
-This project is a work in progress! If you have suggestions, feel free to **fork the repo**, submit **issues**, or create **pull requests**.
+### Authors
 
-⭐ If you find this helpful, **star this repository** and stay tuned for more updates!
+- [@YuvrajSingh](https://github.com/Ishaan-ansari/)
 
----
+## Citation
 
-This keeps it **clean, structured, and informative**. Let me know if you need modifications! 🚀
+If you find this repository useful in your research, please cite it:
+
+```bibtex
+@misc{singh_paper_replications_2025,
+  author       = {Ishaan Singh},
+  title        = {Deep-Learning-from-scratch: Replication from Scratch Repository using PyTorch},
+  year         = {2025},
+  publisher    = {GitHub},
+  journal      = {GitHub repository},
+  howpublished = {\url{https://github.com/Ishaan-Ansari/Deep-Learning-from-scratch}},
+}
+```
