@@ -136,3 +136,5 @@ voicebot_client.html
 # Twilio bridge files
 twilio.py
 twilios.py
+
+.venv
