@@ -190,7 +190,7 @@ A repository where I implement fundamental deep learning architectures from scra
 
 ### Authors
 
-- [@YuvrajSingh](https://github.com/Ishaan-ansari/)
+- [@IshaanAnsari](https://github.com/Ishaan-ansari/)
 
 ## Citation
 
